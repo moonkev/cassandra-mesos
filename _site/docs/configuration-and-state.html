@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: Configuration and State</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li class="active">
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+  <div class="col-sm-3">
+    <h5>Welcome</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/">
+          Getting Started
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/contributing.html">
+          Contributing
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Guides</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/introduction.html">
+          Introduction to Cassandra-Mesos
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Reference</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/configuration-and-state.html">
+            Configuration &amp; State
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/rest-api.html">
+            REST API
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/faq.html">
+            FAQ
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-9">
+    <hr>
+
+<p><strong>DISCLAIMER</strong>
+<em>This is a very early version of Cassandra-on-Mesos framework. This document, code behavior, and anything else may change without notice and/or break older installations.</em></p>
+
+<hr>
+
+<h1 id="configuration-and-state">Configuration and State</h1>
+
+<p>This document is a technical description about what happens inside Cassandra-on-Mesos framework -
+more precisely: inside the scheduler.</p>
+
+<p>Reminder: the single instance of the Cassandra-on-Mesos <em>scheduler</em> submits tasks (and status requests) to  its Cassandra-on-Mesos <em>executors</em>. Configuration and status information is stored as state objects
+in ZooKeeper - and the <em>scheduler</em> is the only process that is updates that information.
+Cassandra-on-Mesos <em>executors</em> are relatively dumb processes that just do what the <em>scheduler</em> wants them to do.</p>
+
+<p>This document assumes that the reader is familiar with Apache Mesos and (to some extent) with
+Apache Cassandra.</p>
+
+<h1 id="state-objects">State objects</h1>
+
+<p>To have a better understanding about what&#39;s going on in the <em>scheduler</em>, it is essential to know the structures defined in <code>model.proto</code>.</p>
+
+<p>The framework stores its state object in ZooKeeper at <code>zk://&lt;server-list&gt;/cassandra-mesos/&lt;framework-name&gt;</code> (let&#39;s call this the <em>ZooKeeper base URL</em>).</p>
+
+<p>Since the framework name is encoded in the ZK URL you can spin off multiple framework instances with different names that can run concurrently on the same cluster.</p>
+
+<p>There are some objects stored directly beneath the <em>ZooKeeper base URL</em>. All of these objects are defined in
+<code>model.proto</code> and are stored in ZK using their message name.</p>
+
+<ul>
+<li><code>CassandraFrameworkConfiguration</code> Base configuration object including all configuration role objects.</li>
+<li><code>CassandraClusterState</code> Current status of the cluster.</li>
+<li><code>CassandraClusterHealthCheckHistory</code> Contains a history of the last health-checks that were received from all nodes.</li>
+<li><code>CassandraClusterJobs</code> Contains the current cluster-wide job and the last job status (one per job type).</li>
+</ul>
+
+<p>These objects are initially persisted when you start a Cassandra-on-Mesos framework for the first time.</p>
+
+<h1 id="general-procedure">General procedure</h1>
+
+<p>Mesos periodically offers the Cassandra-on-Mesos scheduler available resources via a call to <code>Scheduler.resourceOffers</code>. Within this call, the Cassandra-on-Mesos framework checks whether nodes need to be &quot;occupied&quot; as a Cassandra node or tasks have to be submitted against already acquired nodes.</p>
+
+<p>The framework currently only allows one Cassandra instance per node (based on IP address).</p>
+
+<h2 id="offer-handling-in-the-scheduler">Offer handling in the scheduler</h2>
+
+<p>If <code>CassandraClusterState.nodesToAcquire</code> is greater than 0 and an offer is received for a node that does not
+already host a Cassandra instance, a Cassandra-on-Mesos executor is launched on that node.</p>
+
+<p>If <code>CassandraClusterState.seedsToAcquire</code> is also greater than 0, the new Cassandra instance will be a seed node.</p>
+
+<p>If an offer for a node already containing an Cassandra-on-Mesos executor is received, offer handling checks whether tasks need to be launched via that executor, or a health check or a status report for a cluster-wide
+job is required.</p>
+
+<p>Tasks are launched via <code>SchedulerDriver.launchTasks()</code>. Such tasks can be:</p>
+
+<ol>
+<li>Executor metadata - to inquire some executor and slave node metadata. This tasks ends when the executor itself
+terminates.</li>
+<li>Cassandra server - to start the Cassandra process.</li>
+<li>Cluster job - to start a node&#39;s part of a cluster-wide job (repair and cleanup).</li>
+</ol>
+
+<p>Messages are submitted via <code>SchedulerDriver.sendFrameworkMessage()</code>. Such messages can be:</p>
+
+<ol>
+<li>Health check - to check the status of a Cassandra process</li>
+<li>Cluster job status - to check the status of a node&#39;s part of a cluster-wide job (repair and cleanup)</li>
+</ol>
+
+<p><img src="/cassandra-mesos/img/offer-and-comm.png" alt="Offers" title="Offers"></p>
+
+<p><img src="/cassandra-mesos/img/offer-handling.png" alt="Offer handling details" title="Offer handling details"></p>
+
+<h2 id="node-status">Node status</h2>
+
+<p>A <code>CassandraNode</code> is created with <code>targetRunState=RUN</code>. There are four run states defined. It is possible to set the
+<code>targetRunState</code> from any state to any state - except that it is not possible to change the <code>targetRunState</code> once
+it is set to <code>TERMINATE</code>.</p>
+
+<ul>
+<li><code>RUN</code> the normal and initial state. It means that the scheduler will do its best to keep the Cassandra process
+running. It will be started if necessary.</li>
+<li><code>STOP</code> means that the Cassandra process should not run. It will be stopped if necessary.</li>
+<li><code>RESTART</code> is basically a automatic transition via <code>STOP</code> to <code>RUN</code>. After the Cassandra process has been stopped
+and is running again, the <code>targetRunState</code> is set to <code>RUN</code>.</li>
+<li><code>TERMINATE</code> is a &#39;dead end state&#39;. It means to stop the Cassandra process and the executor. It is not possible
+to set <code>targetRunState</code> for this node to another value. All you can do is to do initiate a node-replace for
+this node.</li>
+</ul>
+
+<p><img src="/cassandra-mesos/img/node-state-transition.png" alt="CassandraNode targetRunState transitions" title="CassandraNode targetRunState transitions"></p>
+
+<h2 id="cluster-jobs">Cluster jobs</h2>
+
+<p>Cassandra-on-Mesos framework uses so called <em>cluster jobs</em> to ensure that certain tasks like
+<em>repair</em>, <em>cleanup</em> and <em>restart</em> are never executed on/against more than one node. Some job types
+(<em>repair</em> and <em>cleanup</em>) involve activity performed against the actual Cassandra process. Other job types
+(<em>restart</em>) are just a kind of synchonization object.</p>
+
+<p>Only one cluster job can be active at all times. A cluster job can be aborted - effectively after the current
+node has finished its part. At the moment there is no way to interrupt a node&#39;s part of a cluster job.</p>
+
+<p>A node&#39;s part of a cluster job is effectively cancelled when the Cassandra process or its executor or its
+slave dies.</p>
+
+<p><img src="/cassandra-mesos/img/cluster-jobs.png" alt="Cluster job diagram" title="Cluster job diagram"></p>
+
+<h2 id="task-states">Task states</h2>
+
+<p>The <code>CassandraNode</code> keeps track of all tasks that have been launched via the executor. Again, there are three kinds
+of tasks that can be launched: executor metadata, cassandra server and cluster job.</p>
+
+<p>Each started task is added to <code>CassandraNode.tasks</code>. A task is only removed from that list, when the scheduler receives
+the appropiate status update from Mesos via <code>Scheduler.statusUpdate()</code>. This means, that the <code>CassandraNode.tasks</code>
+list contains only running tasks.</p>
+
+<p>There are three kinds of tasks:</p>
+
+<ul>
+<li><code>METADATA</code> is used to inquire some information about the node the executor runs on.
+This task does not spawn a process.</li>
+<li><code>SERVER</code> is the task that writes Cassandra configuration files and starts the Cassandra process.
+Task status changes from executor to scheduler represent whether the Cassandra process is running.</li>
+<li><code>CLUSTER_JOB</code> is the task that represents the node&#39;s part of a cluster wide job like <em>repair</em> or <em>cleanup</em>.
+This task does not spawn a process.</li>
+<li><code>CONFIG_UPDATE</code> is the task that just updates Cassandra configuration files.
+This task does not spawn a process.</li>
+</ul>
+
+<p>The lifecycle of a task is communicated via the standard Mesos messages. </p>
+
+<h2 id="framework-messages">Framework messages</h2>
+
+<p>The scheduler requests status information from executors periodically via so called Mesos framework messages. Framework messages are not guaranteed to arrive in order or to even be delivered at all.</p>
+
+<p>Cassandra-on-Mesos uses two kinds of status request/response framework messages:</p>
+
+<ul>
+<li><code>HEALTH_CHECK_DETAILS</code> to get information about the status of the Cassandra process.</li>
+<li><code>NODE_JOB_STATUS</code> to get information about the status and progress of a node&#39;s part of a cluster-wide
+job like <em>repair</em> or <em>cleanup</em>.</li>
+</ul>
+
+<p>The executor can submit framework messages on its own as part of another task - for example when detecting
+that the Cassandra process died or to inform the scheduler about a status change.</p>
+
+<h2 id="&quot;node-is-live&quot;-detection">&quot;node-is-live&quot; detection</h2>
+
+<p>Sometimes the framework has to ensure that a Cassandra node can be considered as &quot;live&quot;. A Cassandra node
+is considered &quot;live&quot;, when all the following criteria match (in <code>CassandraCluster.isLiveNode()</code>):</p>
+
+<ol>
+<li>The <code>CassandraNode</code> has a <code>cassandraNodeExecutor</code> field value.</li>
+<li>The <code>CassandraNode</code> has a task of type <code>SERVER</code> (which means that the Cassandra process is running).</li>
+<li>The <code>CassandraNode</code> has a recent <code>HealthCheckHistoryEntry</code>, which is <code>healthy</code> and has a <code>info</code>field value.</li>
+<li>The <code>NodeInfo</code> in the recent <code>HealthCheckHistoryEntry</code> indicates that both native transport and thrift transport
+are running.</li>
+</ol>
+
+<h2 id="cassandra-process-startup-restrictions">Cassandra process startup restrictions</h2>
+
+<p>The Cassandra-on-Mesos framework currently defines the following limitations before a Cassandra process can be started:</p>
+
+<ol>
+<li>At least one Cassandra seed node must be running and must be in operation-mode `NORMAL.
+Otherwise new nodes would never successfully join the cluster.</li>
+<li>All other nodes must be in the <code>NORMAL</code> operation mode.</li>
+<li>No two Cassandra processes must be started within the configuration parameter <code>bootstrapGraceTimeSeconds</code>.
+This is to allow a previously started node to successfully bootstrap.</li>
+</ol>
+
+<h1 id="initial-startup">Initial startup</h1>
+
+<p>The inital state (<code>CassandraClusterState</code>) is basically empty and has the fields <code>nodesToAcquire</code> set to the
+configured number of nodes and <code>seedsToAcquire</code> set to the number of seeds.</p>
+
+<p>At first, the scheduler just acquires the number of seed nodes by allocating the required resources and
+launching the Cassandra-on-Mesos executor. No Cassandra process will be started until there are enough seed nodes to fulfil the initially configured number of seeds (via <code>CassandraFrameworkConfiguration.defaultConfigRole.numberOfSeeds</code>).</p>
+
+  </div>
+</div>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: Setting Up and Running Cassandra-Mesos</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li class="active">
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+  <div class="col-sm-3">
+    <h5>Welcome</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/">
+          Getting Started
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/contributing.html">
+          Contributing
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Guides</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/introduction.html">
+          Introduction to Cassandra-Mesos
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Reference</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/configuration-and-state.html">
+            Configuration &amp; State
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/rest-api.html">
+            REST API
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/faq.html">
+            FAQ
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-9">
+    <hr>
+
+<p><strong>DISCLAIMER</strong>
+<em>This is a very early version of Cassandra-on-Mesos framework. This
+document, code behavior, and anything else may change without notice and/or break older installations.</em></p>
+
+<hr>
+
+<h1 id="setting-up-and-running-cassandra-mesos">Setting Up And Running Cassandra-Mesos</h1>
+
+<p>To set up Cassandra-Mesos locally for development purposes skip ahead to the <a href="#local-setup">Local Setup</a> section.</p>
+
+<h2 id="deploying-cassandra-mesos-to-a-dcos-cluster">Deploying Cassandra-Mesos to a DCOS Cluster</h2>
+
+<p>Note that Cassandra-Mesos is <strong>not</strong> ready to be used for production workloads. Please do not use it for business critical applications just yet.</p>
+
+<h3 id="requirements">Requirements</h3>
+
+<ul>
+<li>Mesosphere DCOS cluster.</li>
+<li>Mesosphere DCOS CLI installed.</li>
+</ul>
+
+<h3 id="installation">Installation</h3>
+
+<ol>
+<li><p>Update your local cache of the package repository:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">  dcos package update
+</code></pre></div></li>
+<li><p>Install the Cassandra datacenter service:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">  dcos package install cassandra
+</code></pre></div></li>
+<li><p>Verify that the service was successfully installed:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">  dcos package list-installed
+</code></pre></div></li>
+</ol>
+
+<p>For more information about the DCOS, see the <a href="http://docs.mesosphere.com">Mesosphere docs</a>.</p>
+
+<h2 id="local-setup"><a name="local-setup"></a>Local Setup</h2>
+
+<p>Cassandra-on-Mesos setup is simple on a Linux machine or Mac. Windows is not currently supported.</p>
+
+<h3 id="requirements">Requirements</h3>
+
+<ul>
+<li><a href="http://zookeeper.apache.org/">Apache ZooKeeper</a> version 3.4.6 or newer</li>
+<li><a href="http://mesos.apache.org/">Apache Mesos</a> version 0.22 or newer</li>
+<li><a href="http://cassandra.apache.org/">Apache Cassandra</a> version 2.1.x</li>
+<li><a href="https://github.com/mesosphere/cassandra-mesos/">Cassandra-on-Mesos</a> checkout the <code>master</code> branch (<code>git clone https://github.com/mesosphere/cassandra-mesos.git</code>)</li>
+<li>Oracle JDK 1.7.0u76 or newer</li>
+</ul>
+
+<h3 id="note-for-mac-users">Note for Mac users</h3>
+
+<p>To run multiple slaves by using local IP addresses like <code>127.0.0.1</code> or <code>127.0.0.2</code>, you must first make
+them available:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo ifconfig lo0 <span class="nb">alias </span>127.0.0.2 up
+sudo ifconfig lo0 <span class="nb">alias </span>127.0.0.3 up
+sudo ifconfig lo0 <span class="nb">alias </span>127.0.0.4 up
+</code></pre></div>
+<h3 id="configuring-and-starting">Configuring and starting</h3>
+
+<p>This document assumes that you have created a directory <code>mkdir ~/cassandra-on-mesos</code> and your
+working directory is <code>cd ~/cassandra-on-mesos</code>.</p>
+
+<h4 id="zookeeper">ZooKeeper</h4>
+
+<ol>
+<li>Create a new directory <code>zookeeper</code> and <code>cd</code> into it.</li>
+<li>Unpack ZooKeeper tarball in the <code>zookeeper</code> directory.</li>
+<li>Create a new directory named <code>data</code>.</li>
+<li>Verify that the directory structure now looks like this:</li>
+</ol>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">   ~/cassandra-on-mesos/zookeeper<span class="nv">$ </span>ls -1
+   zookeeper-3.4.6/
+   data/
+</code></pre></div>
+<ol>
+<li>Create a file that is named <code>zoo.cfg</code> in <code>zookeeper-3.4.6/conf</code> with the following content:</li>
+</ol>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">   <span class="nv">tickTime</span><span class="o">=</span>2000
+   <span class="nv">dataDir</span><span class="o">=</span>/home/me/zookeeper/data
+   <span class="nv">clientPort</span><span class="o">=</span>2181
+</code></pre></div>
+<p>Replace the <code>dataDir</code> value to point to your installation directory.
+1. Start ZooKeeper</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">   ~/cassandra-on-mesos/zookeeper<span class="nv">$ </span><span class="nb">cd </span>zookeeper-3.4.6
+   ~/cassandra-on-mesos/zookeeper/zookeeper-3.4.6<span class="nv">$ </span>bin/zkServer.sh start
+</code></pre></div>
+<h4 id="mesos">Mesos</h4>
+
+<ol>
+<li>Create a directory <code>mesos</code>and <code>cd</code> into it.</li>
+<li>If you&#39;ve built Mesos from source, go into the <code>build</code> directory.</li>
+<li>Define a base working directory for the master and the slaves - for example <code>/tmp/mesos</code>
+(use <code>/private/tmp/mesos</code> on Mac).</li>
+<li>Now start a bunch of processes - one Mesos master and minimally one Mesos slave.</li>
+</ol>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">   <span class="nv">MY_IP</span><span class="o">=</span>127.0.0.1
+   <span class="nv">MY_IP_2</span><span class="o">=</span>127.0.0.2
+   <span class="nv">MY_IP_3</span><span class="o">=</span>127.0.0.3
+   <span class="nv">BASEDIR</span><span class="o">=</span>/tmp/mesos
+   ./bin/mesos-master.sh --ip<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP</span><span class="k">}</span> --work_dir<span class="o">=</span><span class="k">${</span><span class="nv">BASEDIR</span><span class="k">}</span>/master --zk<span class="o">=</span>zk://<span class="nv">$MY_IP</span>:2181/mesos --quorum<span class="o">=</span><span class="m">1</span> <span class="p">&amp;</span>
+   ./bin/mesos-slave.sh --master<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP</span><span class="k">}</span>:5050 --ip<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP</span><span class="k">}</span> --work_dir<span class="o">=</span><span class="k">${</span><span class="nv">BASEDIR</span><span class="k">}</span>/slave1 --resources<span class="o">=</span><span class="s1">&#39;ports:[31000-32000,7000-7001,7199-7199,9042-9042,9160-9160]&#39;</span> <span class="p">&amp;</span>
+   ./bin/mesos-slave.sh --master<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP</span><span class="k">}</span>:5050 --ip<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP_2</span><span class="k">}</span> --work_dir<span class="o">=</span><span class="k">${</span><span class="nv">BASEDIR</span><span class="k">}</span>/slave2 --resources<span class="o">=</span><span class="s1">&#39;ports:[31000-32000,7000-7001,7199-7199,9042-9042,9160-9160]&#39;</span> <span class="p">&amp;</span>
+   ./bin/mesos-slave.sh --master<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP</span><span class="k">}</span>:5050 --ip<span class="o">=</span><span class="k">${</span><span class="nv">MY_IP_3</span><span class="k">}</span> --work_dir<span class="o">=</span><span class="k">${</span><span class="nv">BASEDIR</span><span class="k">}</span>/slave3 --resources<span class="o">=</span><span class="s1">&#39;ports:[31000-32000,7000-7001,7199-7199,9042-9042,9160-9160]&#39;</span> <span class="p">&amp;</span>
+</code></pre></div>
+<ol>
+<li>Verify that Mesos is running by opening <code>http://127.0.0.1:5050/</code> in your browser.</li>
+</ol>
+
+<h4 id="cassandra-on-mesos">Cassandra-on-Mesos</h4>
+
+<h5 id="cassandra-on-mesos-from-a-shell-prompt">Cassandra-on-Mesos from a shell prompt</h5>
+
+<ol>
+<li>Open the file <code>dev-run.bash</code> and update the variables as necessary.</li>
+<li>Execute <code>dev-run.bash</code>.</li>
+</ol>
+
+<h5 id="cassandra-on-mesos-from-an-ide">Cassandra-on-Mesos from an IDE</h5>
+
+<ol>
+<li>Run  <code>git clone https://github.com/mesosphere/cassandra-mesos.git</code>.</li>
+<li>Open your IDE, create a project and import it using the Maven model.</li>
+<li>Define environment variables in the run configuration of your IDE for
+<code>io.mesosphere.mesos.frameworks.cassandra.Main</code>:</li>
+</ol>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">   <span class="c"># Number of Cassandra nodes to start</span>
+   <span class="nb">export </span><span class="nv">CASSANDRA_NODE_COUNT</span><span class="o">=</span>2
+   <span class="c"># Number of seed nodes</span>
+   <span class="nv">CASSANDRA_SEED_COUNT</span><span class="o">=</span>1
+   <span class="c"># (Optional) Change the default value of 60 seconds to 10 seconds on development systems</span>
+   <span class="nv">CASSANDRA_HEALTH_CHECK_INTERVAL_SECONDS</span><span class="o">=</span>10
+   <span class="c"># (Optional) Change the default value of 120 seconds to 0 for local test and development systems</span>
+   <span class="nv">CASSANDRA_BOOTSTRAP_GRACE_TIME_SECONDS</span><span class="o">=</span>0
+   <span class="c"># The port on which the REST API is available</span>
+   <span class="nv">PORT0</span><span class="o">=</span>18080
+   <span class="c"># Absolute path of libmesos </span>
+   <span class="nv">MESOS_NATIVE_JAVA_LIBRARY</span><span class="o">=</span>.../libmesos.dylib
+   <span class="c"># Absolute path where of the Cassandra-on-Mesos executor</span>
+   <span class="nv">EXECUTOR_FILE_PATH</span><span class="o">=</span>.../cassandra-executor-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+   <span class="c"># Absolute path to the JRE you downloaded</span>
+   <span class="nv">JRE_FILE_PATH</span><span class="o">=</span>...jre-7u76-macosx-x64.tar.gz
+   <span class="c"># Absolute path to the Apache Cassandra you downloaded</span>
+   <span class="nv">CASSANDRA_FILE_PATH</span><span class="o">=</span>.../apache-cassandra-2.1.4-bin.tar.gz
+</code></pre></div>
+<h3 id="start-from-scratch">Start from scratch</h3>
+
+<ol>
+<li>Kill all Java processes (make sure you don&#39;t accidentally kill your IDE&#39;s processes).</li>
+<li>Kill all Mesos processes, scrub the base working directory.</li>
+<li>Stop ZooKeeper, scrub the data directory.</li>
+<li>Start ZooKeeper, Mesos master, Mesos slaves, and Cassandra-on-Mesos framework.</li>
+</ol>
+
+  </div>
+</div>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>

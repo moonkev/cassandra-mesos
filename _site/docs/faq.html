@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: FAQ</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li class="active">
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+  <div class="col-sm-3">
+    <h5>Welcome</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/">
+          Getting Started
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/contributing.html">
+          Contributing
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Guides</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/introduction.html">
+          Introduction to Cassandra-Mesos
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Reference</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/configuration-and-state.html">
+            Configuration &amp; State
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/rest-api.html">
+            REST API
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/faq.html">
+            FAQ
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-9">
+    <hr>
+
+<p><strong>DISCLAIMER</strong>
+<em>This is a very early version of Cassandra-on-Mesos framework. This document, code behavior, and anything else may change without notice and/or break older installations.</em></p>
+
+<hr>
+
+<h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+
+<h3 id="troubleshooting-when-no-cassandra-process-is-started"><strong>Troubleshooting when no Cassandra process is started</strong></h3>
+
+<p>The Cassandra-on-Mesos framework first allocates executors for all seed nodes. It starts the Cassandra processes after the initially configured number of seed nodes have been allocated.</p>
+
+<p><em>Example:</em> If you have configured 3 seed nodes, but only 2 executors are allocated, no Cassandra process
+  is started. After the 3rd executor is allocated, all Cassandra processes are started in the normal fashion.</p>
+
+<h3 id="can-i-run-cassandra-in-the-cloud?"><strong>Can I run Cassandra in the cloud?</strong></h3>
+
+<p>Yes! However, if you run Mesos on Amazon EC2 or Google Compute Engine, make sure that all Cassandra nodes live in one availability zone for now. Cross region deployments are currently unsupported.</p>
+
+<h3 id="cassandra-processes-have-started-but-it-takes-a-long-time-until-the-whole-cluster-is-running"><strong>Cassandra processes have started but it takes a long time until the whole cluster is running</strong></h3>
+
+<p>Here are the defined Cassandra-on-Mesos
+  limitations before a Cassandra process can be started:</p>
+
+<ol>
+<li>A minimum of one Cassandra seed node must be running and in operation-mode <code>NORMAL</code>.
+ Otherwise, other nodes cannot join the cluster.</li>
+<li>All other nodes must be in operation-mode <code>NORMAL</code>.</li>
+<li>Only a single Cassandra processes can be started within the configuration parameter <code>bootstrapGraceTimeSeconds</code>.
+ This allows a previously started node to successfully bootstrap.</li>
+</ol>
+
+<h3 id="are-multi-homed-servers-supported?"><strong>Are multi-homed servers supported?</strong></h3>
+
+<p>Yes, if you configure Apache Mesos and Apache Cassandra correctly.</p>
+
+<p><strong>Security risk notice:</strong>
+  If you have an interface that faces the public internet and you expose ports that are used by Apache Mesos and/or Apache Cassandra to the public internet, you are at serious risk of compromise. <strong>Never expose ports to the public internet and configure your firewall rules carefully!</strong></p>
+
+<p><strong>Special note on JMX port</strong> Sun/Oracle do not
+  bind the JMX network listener to a specific IP and/or interface, which means that JMX is available on all
+  interfaces.</p>
+
+<h3 id="jmx-port-of-apache-cassandra"><strong>JMX port of Apache Cassandra</strong></h3>
+
+<p>A possible security risk in Apache has been closed in versions 2.0.14 and 2.1.4. This had impact to the
+  current development of the Cassandra-on-Mesos framework. Since 2.0.14 and 2.1.4 Apache Cassandra only opens the JMX port (usually 7199) on the loopback address (<code>127.0.0.1</code>). If you wish to open it <strong>and know that you introduce a possible security risk</strong>, you can pass the environment variables CASSANDRA<em>JMX</em>LOCAL=false<code>and</code>CASSANDRA<em>JMX</em>NO_AUTHENTICATION=true` to the framework upon <strong>initial</strong> invocation (i.e. when the framework first registers).</p>
+
+<p><a href="https://issues.apache.org/jira/browse/CASSANDRA-9089">CASSANDRA-9089</a> is meant to let JMX listen to a
+  specific IP address, but is is not included in Cassandra 2.1.4.</p>
+
+<p>References:</p>
+
+<ul>
+<li><a href="http://www.mail-archive.com/user@cassandra.apache.org/msg41819.html">Security announcement</a></li>
+<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-9085">CASSANDRA-9085</a></li>
+<li><a href="https://wiki.apache.org/cassandra/JmxSecurity">JMX security</a></li>
+<li><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html">JMX agent</a></li>
+</ul>
+
+<h3 id="which-versions-of-apache-cassandra-are-supported?"><strong>Which versions of Apache Cassandra are supported?</strong></h3>
+
+<p>All Apache Cassandra versions from 2.1 forward work with this version of the Cassandra-on-Mesos framework.
+  <strong>Note</strong> Currently there is no official mechanism to upgrade from one version to another.</p>
+
+<h3 id="cassandra-nodetool-complains-with-strange-exceptions"><strong>Cassandra nodetool complains with strange exceptions</strong></h3>
+
+<p>The  <code>nodetool</code> and  <code>com-nodetool</code> are not designed to be executed against releases outside of the ones they are taken from. This means that a <code>nodetool</code> command from 2.1.2 issued against 2.0.14 may not work. There is no guaranteed compatibility in JMX between versions of Apache Cassandra.</p>
+
+  </div>
+</div>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>

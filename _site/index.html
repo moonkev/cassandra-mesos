@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: Cassandra-Mesos: Cassandra on Mesos</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li >
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="jumbotron text-center">
+  <h1>Cassandra-Mesos</h1>
+  <p class="lead">
+    Cassandra on Mesos
+  </p>
+  <p>
+    <a href="https://github.com/mesosphere/cassandra-mesos"
+        class="btn btn-lg btn-primary">
+      Cassandra-Mesos repository
+    </a>
+  </p>
+</div>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>As the adoption of Apache Mesos expands, there is increasing demand to run distributed database systems such as Cassandra. In order to run Cassandra on Mesos well, it is desirable that many operational tasks be automated by the framework rather than requiring manual action.</p>
+
+<h2 id="design">Design</h2>
+
+<p>To develop an Apache Mesos Framework to support scheduling and running Cassandra nodes in a Mesos cluster.  This would involve developing a Mesos Scheduler, a custom Mesos Executor, integration with nodetool to allow for management of running nodes. Java will be used as the implementation language for the Framework Scheduler and Custom Executor because it is also the language of the Cassandra Project. Our plan is to contribute the integration code to the Cassandra Project so it works out of the box.To remove any dependency on external storage the Cassandra Framework will use the State Abstraction provided by Mesos to persist any meta-data that the framework scheduler will need to persist.</p>
+
+<h2 id="goal-scenario">Goal Scenario</h2>
+
+<p>An operator or application developer has decided that she wants a Cassandra ring, so a framework scheduler is started and registers with the Mesos Master. Once registration is successful the framework will begin the process of trying to bootstrap the initial seed nodes in succession. Once seed nodes are up and healthy the framework will begin expanding the cluster to the desired total number of nodes.  Once the nodes are up the framework will take care of running all periodic administration operations (nodetool repair, etc).  If a node were to be lost, the framework would first attempt to restart the node on the same host, and if unable to restart the node in a reasonable (1hr?) amount of time a new node would be started to take its place, and the framework would remove the lost node from the cluster.</p>
+
+<h2 id="components">Components</h2>
+
+<h3 id="mesos-framework">Mesos Framework</h3>
+
+<h4 id="characteristics">Characteristics</h4>
+
+<ol>
+<li>Multiple instances of the framework can be run for multiple rings</li>
+<li>Frameworks will re-register with Mesos when restarting if it was previously registered (Scheduler HA)</li>
+<li>Fault Tolerant, to restart failed Cassandra node tasks and guarantee capacity</li>
+<li>The framework will be self-contained and not depend on anything from the host system (past the linux kernel and standard libraries the jvm depends on)</li>
+<li>Written for Java 7 update 75</li>
+</ol>
+
+<h3 id="mesos-scheduler">Mesos Scheduler</h3>
+
+<p>The Mesos scheduler is the component with the most high-level intelligence in the framework. It will need to possess the ability to bootstrap a ring and distribute the correct configuration to all subsequently started nodes. The Scheduler will also be responsible for orchestrating all tasks with regard to restarting nodes and triggering and monitoring periodic administrative tasks required by a node.</p>
+
+<h4 id="responsibilities">Responsibilities</h4>
+
+<ol>
+<li>Bootstrapping a ring</li>
+<li>Adding nodes to a ring</li>
+<li>Restarting a node that has crashed <a href="#resources">[11]</a></li>
+<li>Providing configuration to nodes
+
+<ol>
+<li>Seed nodes</li>
+<li>Snitch Class</li>
+<li>JVM OPTS</li>
+</ol></li>
+<li>Scheduling and running administrative utilities
+
+<ol>
+<li>nodetool repair</li>
+<li>nodetool cleanup</li>
+</ol></li>
+<li>Provide visibility into operations planned or running</li>
+<li>Handle node replacement which a node is super lost</li>
+</ol>
+
+<h4 id="characteristics">Characteristics</h4>
+
+<ol>
+<li>Registering with Mesos with a failover timeout</li>
+<li>Supports framework authentication</li>
+<li>Declines offers to resources it doesn&#39;t need</li>
+<li>Only use necessary fraction of offers</li>
+<li>Deal with lost tasks</li>
+<li>Does not rely on in-memory state</li>
+<li>Verifies supported Mesos Version</li>
+<li>Supports roles</li>
+<li>Able to provide set of ports to be used by Nodes
+
+<ol>
+<li>Initial implementation will be for a static set of ports with a potential for longer term dynamic port usage.</li>
+</ol></li>
+<li>Written for Java 7 update 75</li>
+</ol>
+
+<h3 id="mesos-executor">Mesos Executor</h3>
+
+<p>The Custom Mesos Executor will be responsible for providing a high-fidelity means of integrating with nodetool and managing the running of a specific Cassandra node on a Mesos Slave.</p>
+
+<h4 id="responsibilities">Responsibilities</h4>
+
+<ol>
+<li>Monitor health of running node</li>
+<li>Use JMX Mbeans for interfacing with Cassandra Server Process</li>
+<li>Communicate results of administrative actions via StatusUpdates to scheduler when necessary</li>
+</ol>
+
+<h4 id="characteristics">Characteristics</h4>
+
+<ol>
+<li>Does not rely on file system state outside sandbox</li>
+<li>Pure libprocess communication with Scheduler leveraging StatusUpdate</li>
+<li>Does not rely on running on a particular slave node</li>
+<li>Data directories will be created and managed by Mesos leveraging the features provided in MESOS-1554 <a href="#resources">[5]</a></li>
+</ol>
+
+<h3 id="cassandra">Cassandra</h3>
+
+<h4 id="nodes">Nodes</h4>
+
+<ol>
+<li>Static Port configuration for all ports listed in <a href="#resources">10</a> below</li>
+</ol>
+
+<h2 id="out-of-scope-for-version-1.0">Out of Scope for Version 1.0</h2>
+
+<ul>
+<li>Support for reducing the size of a ring</li>
+<li>Data backup</li>
+<li>Automatic Upgrades</li>
+<li>Auto-scaling</li>
+<li>Performance Optimizations</li>
+<li>Dynamic Ports</li>
+<li>Multi-DataCenter support</li>
+<li>Support vertically scaling nodes (increase RAM or CPU resources for a node)
+
+<ul>
+<li>Depends on MESOS-1279 <a href="#resources">[6]</a></li>
+</ul></li>
+<li>Automatically scheduled <code>nodetool cleanup</code>
+
+<ul>
+<li>There are semantics of how a cluster is used that need to be taken into consideration when running cleanup. As such, we don&#39;t feel comfortable automatically running cleanup.</li>
+</ul></li>
+</ul>
+
+<h2 id="resources">Resources</h2>
+
+<ol>
+<li><a href="http://www.datastax.com/documentation/cassandra/2.1/cassandra/operations/ops_add_node_to_cluster_t.html">Adding nodes to an existing cluster</a></li>
+<li><a href="https://wiki.apache.org/cassandra/Operations#Ring_management">Ring management</a></li>
+<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-8651">CASSANDRA-8651 Add support for running on Apache Mesos</a></li>
+<li><a href="https://issues.apache.org/jira/browse/MESOS-2018">MESOS-2018 Dynamic Reservations</a></li>
+<li><a href="https://issues.apache.org/jira/browse/MESOS-1554">MESOS-1554 Persistent resources support for storage-like services</a></li>
+<li><a href="https://issues.apache.org/jira/browse/MESOS-1279">MESOS-1279 Add resize task primitive</a></li>
+<li><a href="https://github.com/tobert/cassandra-docker">cassandra-docker</a></li>
+<li><a href="https://github.com/mesosphere/cassandra-mesos">Proof-of-concept Cassandra Framework</a></li>
+<li><a href="https://github.com/mesosphere/hdfs">HDFS Framework (another stateful service)</a></li>
+<li><a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/security/secureFireWall_r.html">Configuring firewall port access</a></li>
+<li><a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/operations/ops_replace_node_t.html">Replacing a dead node</a></li>
+</ol>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>

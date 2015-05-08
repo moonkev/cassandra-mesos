@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: Introduction to Cassandra-Meso</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li class="active">
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+  <div class="col-sm-3">
+    <h5>Welcome</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/">
+          Getting Started
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/contributing.html">
+          Contributing
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Guides</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/introduction.html">
+          Introduction to Cassandra-Mesos
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Reference</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/configuration-and-state.html">
+            Configuration &amp; State
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/rest-api.html">
+            REST API
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/faq.html">
+            FAQ
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-9">
+    <hr>
+
+<p><strong>DISCLAIMER</strong>
+<em>This is a very early version of Cassandra-on-Mesos framework. This document, code behavior, and anything else may change without notice and/or break older installations.</em></p>
+
+<hr>
+
+<h1 id="introduction-to-cassandra-mesos">Introduction to Cassandra-Mesos</h1>
+
+<p>There are some differences when running <a href="http://cassandra.apache.org/">Apache Cassandra</a> on <a href="http://mesos.apache.org/">Apache Mesos</a> versus natively. This document gives experienced Cassandra users a high level overview of these differences.</p>
+
+<h2 id="apache-mesos">Apache Mesos</h2>
+
+<p>Apache Mesos is a cluster resource manager and scheduler that provides an easy and robust abstraction to run services in your datacenter.</p>
+
+<p>Behind the scenes, Apache Mesos uses <a href="http://zookeeper.apache.org/">Apache ZooKeeper</a>, a distributed configuration store to persist its state. The &quot;state&quot; of Mesos includes everything from configuration to the status and load of individual Mesos nodes, as well as frameworks like Cassandra-Mesos.</p>
+
+<p>For common Mesos terminology, see the <a href="http://mesosphere.com/docs/reference/glossary/">Mesosphere Glossary</a>.</p>
+
+<h2 id="standard-apache-cassandra-installation">Standard Apache Cassandra Installation</h2>
+
+<p>The standard way of installing Cassandra involves installing and configuring the operating system, JVM and Cassandra manually on each node in your cluster.</p>
+
+<h1 id="initial-cassandra-on-mesos-setup">Initial Cassandra-on-Mesos setup</h1>
+
+<p>If you want to try Cassandra-on-Mesos on a single development machine, see the <a href="/cassandra-mesos/docs/">Getting Started</a> page.</p>
+
+<h1 id="prerequisites">Prerequisites</h1>
+
+<ul>
+<li><a href="http://mesos.apache.org/">Apache Mesos</a>: Mesos and ZooKeeper in a HA configuration</li>
+<li>Servers with <em>local storage</em> (for Cassandra) configured and running as Mesos slaves</li>
+<li>Knowledge of how many resources each of your Cassandra nodes require (RAM, disk space, CPU)</li>
+</ul>
+
+<h1 id="configuration">Configuration</h1>
+
+<p>The Cassandra-on-Mesos framework requires these things before you get started:</p>
+
+<ul>
+<li>Number of Cassandra nodes</li>
+<li>Number of seed nodes</li>
+<li>Number of CPU cores per node</li>
+<li>Amount of RAM per node (see below)</li>
+<li>Amount of disks and space per disk (see below)</li>
+<li>Name of the cluster</li>
+<li>Name of Mesos role</li>
+<li>Additional, non-default configuration in <code>cassandra.yaml</code></li>
+<li>Name of the snitch, name of the datacenter and name of the rack (see below)</li>
+</ul>
+
+<p>Configuring RAM requires the total amount
+of RAM (used by Mesos for provisioning) and the heap size of the Java VM. Off-heap space that is used by Cassandra and
+operating system block level cache has to fit into the gap between these two parameters.</p>
+
+<p>Mesos acquires a workspace (a directory) per executor. The workspace is usually recreated when the
+executor starts, which means the executor gets an empty directory on each start. Because this is not a good
+behavior when using databases (Cassandra is a database), Mesos 0.22 introduces the ability to allocate
+multiple permanent disk locations (<em>not</em> ephemeral) that can be reused when the executor restarts.</p>
+
+<p>Apache Mesos is not aware of the different data centers or racks on its own like Apache Cassandra. Currently, 
+Cassandra-on-Mesos does not support multiple datacenters or racks. To enable this feature in  a future release of
+Cassandra-on-Mesos, we&#39;ve chosen to use the <code>GossipingPropertyFileSnitch</code> by default and to make datacenter and
+rack name configurable.</p>
+
+<p>In summary, the Cassandra-on-Mesos framework performs the following tasks:</p>
+
+<ul>
+<li>Deploys JRE to nodes. However, you must provide the framework a location where you provide a copy of the Oracle
+JRE due to legal/licensing restrictions.</li>
+<li>Deploys Apache Cassandra to nodes</li>
+<li>Configures Apache Cassandra (<code>cassandra.yaml</code> + <code>cassandra-rackdc.properties</code>)</li>
+</ul>
+
+<h1 id="cli-tools">CLI tools</h1>
+
+<h2 id="cassandra-tool-extensions">Cassandra tool extensions</h2>
+
+<p>Apache Cassandra ships with the useful tools <code>cqlsh</code>, <code>nodetool</code>, and <code>cassandra-stress</code>. These tools usually require you
+to pass in the nodes that you want to connect to. This becomes a bit complicated with Mesos because Cassandra nodes might
+be running on a node with an arbitrary IP address.</p>
+
+<p>Cassandra-on-Mesos provides two features to solve this problem:</p>
+
+<ul>
+<li>REST API endpoints to discover live Cassandra nodes</li>
+<li>Shell scripts that use this API</li>
+</ul>
+
+<p>To use these features, you need these tools:</p>
+
+<ul>
+<li>An unpacked copy of Apache Cassandra</li>
+<li>The set of Cassandra-on-Mesos shell scripts</li>
+<li>The IP/hostname of the host running the scheduler (Mesos-DNS makes this task easier)</li>
+</ul>
+
+<p>To run the above tools do the following:</p>
+
+<ul>
+<li><code>cqlsh</code> - use <code>com-cqlsh</code> instead. You can pass all <code>cqlsh</code> options to <code>com-cqlsh</code>, except host and port.</li>
+<li><code>nodetool</code> - use <code>com-nodetool</code> instead. You can pass all <code>nodetool</code> options to <code>com-nodetool</code>, except host and port.
+<strong>Important JMX security issue</strong> since version 2.1.4 (and 2.0.14) Cassandra no longer exposes the JMX port to all
+interfaces but only to the loopback address. See <a href="https://github.com/mesosphere/cassandra-mesos/blob/master/README.md">readme</a> for details.</li>
+<li><code>cassandra-stress</code> - use <code>com-stress</code> instead. You can pass all <code>cassandra-stress</code> options to <code>com-stress</code>,except host and port.</li>
+</ul>
+
+<p>The REST API endpoint chooses the nodes from the set of live nodes randomly. If you use <code>nodetool</code>
+against a specific node, you must find that node&#39;s IP address and use <code>nodetool</code> as usual.</p>
+
+<h2 id="other-cassandra-tools">Other Cassandra tools</h2>
+
+<p>Running Cassandra tools like the many <code>sstable*</code> tools in <code>bin</code> and <code>tools/bin</code> is currently more difficult.
+You must log onto a slave node, <code>cd</code> to the sandbox directory and execute the tools there.
+You can retrieve the sandbox directory for a slave node from the Cassandra-on-Mesos REST API or from the Mesos web UI.</p>
+
+<h2 id="qa-report-collection">QA report collection</h2>
+
+<p>Cassandra-on-Mesos provides a tool to collect and download information from all of your Cassandra nodes into 
+a single directory. <code>com-qa-report</code> downloads the log files from the executor (<code>executor.log</code>), Cassandra
+(<code>system.log</code>), and the results of <code>nodetool version</code>/<code>info</code>/<code>status</code>/<code>tpstats</code> of each node into a single
+directory.</p>
+
+<p>This should make debugging and bug hunting a bit easier for you and us.</p>
+
+<p>Note, that it <code>com-qa-report</code> requires the JMX port to be accessible from the host executing <code>com-qa-report</code>.  </p>
+
+<h1 id="rest-api-features">REST API features</h1>
+
+<p>This list highlights some administrative features that are performed by Cassandra-on-Mesos.</p>
+
+<ul>
+<li>Cluster-wide repair. Performs a <code>nodetool repair</code> <em>WITHOUT</em> 
+<code>--partitioner-range --full --in-local-dc --sequential</code> options. A maximum of one node will perform a repair at any
+time. No cleanup will &quot;disturb&quot; the cluster-wide repair.</li>
+<li>Cluster-wide cleanup. Similar to cluster-wide repair - a maximum of one node performs a cleanup - no
+repair will &quot;disturb&quot; the cluster-wide cleanup.</li>
+<li>Cluster-wide restart - this is a <em>rolling restart</em> and does not interfer with cluster-wide repair or claanup.</li>
+<li>View configuration</li>
+<li>View Cassandra nodes and health check information</li>
+<li>Retrieve list of live endpoints (as JSON or plain text)</li>
+<li>Restart a node, stop a node, start a node</li>
+<li>Replace a node</li>
+<li>Add more nodes (scale out)</li>
+<li>Convert a non-seed node to a seed node, and vice-versa</li>
+</ul>
+
+<h1 id="driver-extension">Driver extension</h1>
+
+<p>To use the Cassandra cluster in your application, an extension to the <a href="https://datastax.github.io/java-driver/">DataStax Java Driver</a> has been
+developed.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Place the base-URI of the Cassandra-on-Mesos REST API here.</span>
+<span class="c1">// It usually looks like this:     http://1.2.3.4:18080/</span>
+<span class="n">String</span> <span class="n">httpServerBaseUri</span> <span class="o">=</span> <span class="s">&quot;http://1.2.3.4:18080/&quot;</span><span class="o">;</span>
+<span class="c1">// Specify how many live nodes you want to provide to the Cluster.Builder instance.</span>
+<span class="kt">int</span> <span class="n">numberOfContactPoints</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+<span class="n">Cluster</span><span class="o">.</span><span class="na">Builder</span> <span class="n">clusterBuilder</span> <span class="o">=</span>
+    <span class="n">CassandraOnMesos</span><span class="o">.</span><span class="na">forClusterBuilder</span><span class="o">(</span><span class="n">Cluster</span><span class="o">.</span><span class="na">builder</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">withApiEndpoint</span><span class="o">(</span><span class="n">httpServerBaseUri</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">withNumberOfContactPoints</span><span class="o">(</span><span class="n">numberOfContactPoints</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</code></pre></div>
+<h1 id="unsupported-or-unimplemented-features">Unsupported or unimplemented features</h1>
+
+<ul>
+<li>Multi-datacenter configurations are not implemented yet.</li>
+<li>Cassandra&#39;s Rack/DC awareness is not supported yet, but we encourage you to choose a datacenter and rack name for your cluster.</li>
+<li>Cassandra software updates including rolling restart is not implemented yet. Minor version updates might be easy but major version updates might require additional tasks like <code>sstableupgrade</code> - so major software upgrades are a much harder task.</li>
+<li>Executor software updates are not implemented yet.</li>
+<li>SSL/encryption configuration is currently not supported.</li>
+<li>Support for <code>sstable*</code> tools</li>
+<li>Support for OpsCenter community edition</li>
+<li>JMX authentication</li>
+</ul>
+
+  </div>
+</div>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>

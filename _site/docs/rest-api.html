@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cassandra-Mesos: REST API Reference</title>
+    <link rel="icon" type="image/x-icon" href="/cassandra-mesos/img/marathon-favicon.ico">
+    <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/cassandra-mesos/css/style.css" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-45222428-4', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="navbar navbar-default navbar-inverse" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/cassandra-mesos/">Cassandra-Mesos</a>
+              </div>
+              <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li class="active">
+                    <a href="/cassandra-mesos/docs/">Docs</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/resources.html">Resources</a>
+                  </li>
+                  <li >
+                    <a href="/cassandra-mesos/support.html">Support</a>
+                  </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="https://github.com/mesosphere/cassandra-mesos">GitHub</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+  <div class="col-sm-3">
+    <h5>Welcome</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/">
+          Getting Started
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/contributing.html">
+          Contributing
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Guides</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/introduction.html">
+          Introduction to Cassandra-Mesos
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <h5>Reference</h5>
+    <ul class="list-unstyled">
+      <li>
+        <a href="/cassandra-mesos/docs/configuration-and-state.html">
+            Configuration &amp; State
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/rest-api.html">
+            REST API
+        </a>
+      </li>
+      <li>
+        <a href="/cassandra-mesos/docs/faq.html">
+            FAQ
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-9">
+    <hr>
+
+<p><strong>DISCLAIMER</strong>
+<em>This is a very early version of Cassandra-on-Mesos framework. This document, code behavior, and anything else may change without notice and/or break older installations.</em></p>
+
+<hr>
+
+<h1 id="rest-api-reference">REST API Reference</h1>
+
+<p>Cassandra-on-Mesos provides a REST API though its scheduler. point your browser to <code>http://127.0.0.1:18080/</code> (or wherever your 
+Cassandra-on-Mesos scheduler is running).</p>
+
+<p>The <code>/</code> endpoint returns a simple JSON object that lists all URLs the method to use, and the available <code>Content-Type</code>.</p>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/config&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/cleanup/start&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/cleanup/abort&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/cleanup/status&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/cleanup/last&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/repair/start&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/repair/abort&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/repair/status&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/repair/last&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/rolling-restart/start&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/rolling-restart/abort&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/rolling-restart/status&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/cluster/rolling-restart/last&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/all&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/seed/all&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/stop/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/start/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/restart/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/terminate/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/replace/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/make-seed/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/node/{node}/make-non-seed/&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/live-nodes&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;text/plain&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/live-nodes/text&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;text/x-cassandra-cqlsh&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/live-nodes/cqlsh&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;text/x-cassandra-nodetool&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/live-nodes/nodetool&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;text/x-cassandra-stress&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/live-nodes/stress&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text/plain&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/qa/report/resources&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;contentType&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:18080/scale/nodes?nodeCount={count}&quot;</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<h1 id="summary-of-api-endpoints">Summary of API endpoints</h1>
+
+<p>Endpoint | HTTP method | Content-Types| Description
+--- | --- | --- | ---
+<code>/config</code>                           | <code>GET</code>  | <code>application/json</code> | Returns the configuration.
+<code>/cluster/cleanup/start</code>            | <code>POST</code> | <code>application/json</code> | Endpoints to start a cluster-wide cleanup.
+<code>/cluster/cleanup/abort</code>            | <code>POST</code> | <code>application/json</code> | Abort the cluster-wide cleanup
+<code>/cluster/cleanup/status</code>           | <code>GET</code>  | <code>application/json</code> | Inquire the current status.
+<code>/cluster/cleanup/last</code>             | <code>GET</code>  | <code>application/json</code> | Inquire the status of the last cleanup.
+<code>/cluster/repair/start</code>             | <code>POST</code> | <code>application/json</code> | Endpoints to start a cluster-wide repair.
+<code>/cluster/repair/abort</code>             | <code>POST</code> | <code>application/json</code> | Abort the cluster-wide repair
+<code>/cluster/repair/status</code>            | <code>GET</code>  | <code>application/json</code> | Inquire the current status.
+<code>/cluster/repair/last</code>              | <code>GET</code>  | <code>application/json</code> | Inquire the status of the last repair.
+<code>/cluster/rolling-restart/start</code>    | <code>POST</code> | <code>application/json</code> | Endpoints to start a cluster-wide rolling-restart.
+<code>/cluster/rolling-restart/abort</code>    | <code>POST</code> | <code>application/json</code> | Abort the cluster-wide rolling-restart
+<code>/cluster/rolling-restart/status</code>   | <code>GET</code>  | <code>application/json</code> | Inquire the current status.
+<code>/cluster/rolling-restart/last</code>     | <code>GET</code>  | <code>application/json</code> | Inquire the status of the last rolling-restart.
+<code>/node/all</code>                         | <code>GET</code>  | <code>application/json</code> | List all nodes and their status.
+<code>/node/seed/all</code>                    | <code>GET</code>  | <code>application/json</code> | IP addresses of all seed nodes and native, thrift, and JMX port numbers.
+<code>/node/{node}/stop</code>                 | <code>POST</code> | <code>application/json</code> | Sets the run-status of the <code>node</code> (either IP, hostname, or executor ID) to <code>STOP</code>, which ensures that the Cassandra process is not running.
+<code>/node/{node}/start</code>                | <code>POST</code> | <code>application/json</code> | Sets the run-status of the <code>node</code> (either IP, hostname, or executor ID) to <code>RUN</code>, which ensures that the Cassandra process is running.
+<code>/node/{node}/restart</code>              | <code>POST</code> | <code>application/json</code> | Sets the run-status of the <code>node</code> (either IP, hostname, or executor ID) to <code>RESTART</code>, which is effectively a sequence of <code>STOP</code> followed by <code>RUN</code>.
+<code>/node/{node}/terminate</code>            | <code>POST</code> | <code>application/json</code> | Sets the requested run-status of the <code>node</code> (either IP, hostname, or executor ID) to <code>TERMINATE</code>, which ensures that the Cassandra node can be replaced. There&#39;s no way to bring a <code>terminated</code> node back.
+<code>/node/{node}/replace</code>              | <code>POST</code> | <code>application/json</code> | Allocates a new Cassandra node that is configured to replace the given <em>node</em> (either IP, hostname, or executor ID).
+<code>/node/{node}/make-seed</code>            | <code>POST</code> | <code>application/json</code> | Converts a non-seed node to a seed node. Implicitly forces a rollout of the Cassandra configuration to all nodes.
+<code>/node/{node}/make-non-seed</code>        | <code>POST</code> | <code>application/json</code> | Converts a seed node to a non-seed node. Implicitly forces a rollout of the Cassandra configuration to all nodes.
+<code>/live-nodes</code>                       | <code>GET</code>  | <code>application/json</code> | Retrieve multiple live nodes, limited to 3 nodes by default. The limit can be changed with the query parameter <code>limit</code>.
+<code>/live-nodes/text</code>                  | <code>GET</code>  | <code>text/plain</code>       | Similar to <code>/live-nodes</code> endpoint but it returns plain text.
+<code>/live-nodes/cqlsh</code>                 | <code>GET</code>  | <code>text/x-cassandra-cqlsh</code> | Special live-nodes endpoints that produce command line options for the Cassandra tool cqlsh.
+<code>/live-nodes/nodetool</code>              | <code>GET</code>  | <code>text/x-cassandra-nodetool</code> | Special live-nodes endpoints that produce command line options for the Cassandra tool nodetool.
+<code>/live-nodes/stress</code>                | <code>GET</code>  | <code>text/x-cassandra-stress</code> | Special live-nodes endpoints that produce command line options for the Cassandra tool stress.
+<code>/qa/report/resources</code>              | <code>GET</code>  | <code>application/json</code>, <code>text/plain</code> | Retrieve a JSON response with relevant information to create a QA report.
+<code>/scale/nodes?nodeCount={count}</code>    | <code>GET</code>  | <code>application/json</code> | Set the desired number of nodes for the cluster (Currently only supports increasing number of nodes).</p>
+
+<h1 id="example-response">Example response</h1>
+
+<h2 id="/node/seed/all"><code>/node/seed/all</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;nativePort&quot;</span> <span class="p">:</span> <span class="mi">9042</span><span class="p">,</span>
+    <span class="nt">&quot;rpcPort&quot;</span> <span class="p">:</span> <span class="mi">9160</span><span class="p">,</span>
+    <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">7199</span><span class="p">,</span>
+    <span class="nt">&quot;seeds&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;127.0.0.1&quot;</span> <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/config"><code>/config</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;frameworkName&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;frameworkId&quot;</span> <span class="p">:</span> <span class="s2">&quot;20150318-143436-16777343-5050-5621-0000&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;defaultConfigRole&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;cassandraVersion&quot;</span> <span class="p">:</span> <span class="s2">&quot;2.1.2&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;targetNodeCount&quot;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&quot;seedNodeCount&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&quot;diskMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="nt">&quot;cpuCores&quot;</span> <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+        <span class="nt">&quot;memJavaHeapMb&quot;</span> <span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="nt">&quot;memAssumeOffHeapMb&quot;</span> <span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="nt">&quot;memMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="nt">&quot;taskEnv&quot;</span> <span class="p">:</span> <span class="kc">null</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;nativePort&quot;</span> <span class="p">:</span> <span class="mi">9042</span><span class="p">,</span>
+    <span class="nt">&quot;rpcPort&quot;</span> <span class="p">:</span> <span class="mi">9160</span><span class="p">,</span>
+    <span class="nt">&quot;storagePort&quot;</span> <span class="p">:</span> <span class="mi">7000</span><span class="p">,</span>
+    <span class="nt">&quot;sslStoragePort&quot;</span> <span class="p">:</span> <span class="mi">7001</span><span class="p">,</span>
+    <span class="nt">&quot;seeds&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;127.0.0.1&quot;</span> <span class="p">],</span>
+    <span class="nt">&quot;healthCheckIntervalSeconds&quot;</span> <span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="nt">&quot;bootstrapGraceTimeSeconds&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;currentClusterTask&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;lastRepair&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;lastCleanup&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;nextPossibleServerLaunchTimestamp&quot;</span> <span class="p">:</span> <span class="mi">1426685858805</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/all"><code>/node/all</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;replaceNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">],</span>
+    <span class="nt">&quot;nodesToAcquire&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;nodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+        <span class="nt">&quot;tasks&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;METADATA&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;cpuCores&quot;</span> <span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                <span class="nt">&quot;diskMb&quot;</span> <span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+                <span class="nt">&quot;memMb&quot;</span> <span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+                <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;SERVER&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;cpuCores&quot;</span> <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+                <span class="nt">&quot;diskMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+                <span class="nt">&quot;memMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+                <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor.server&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;targetRunState&quot;</span> <span class="p">:</span> <span class="s2">&quot;RUN&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">64112</span><span class="p">,</span>
+        <span class="nt">&quot;seedNode&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;cassandraDaemonPid&quot;</span> <span class="p">:</span> <span class="mi">6104</span><span class="p">,</span>
+        <span class="nt">&quot;lastHealthCheck&quot;</span> <span class="p">:</span> <span class="mi">1426686217128</span><span class="p">,</span>
+        <span class="nt">&quot;healthCheckDetails&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;healthy&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;msg&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;version&quot;</span> <span class="p">:</span> <span class="s2">&quot;2.1.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;operationMode&quot;</span> <span class="p">:</span> <span class="s2">&quot;NORMAL&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;clusterName&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;dataCenter&quot;</span> <span class="p">:</span> <span class="s2">&quot;DC1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;rack&quot;</span> <span class="p">:</span> <span class="s2">&quot;RAC1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;endpoint&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostId&quot;</span> <span class="p">:</span> <span class="s2">&quot;4207396e-6aa0-432e-97d9-1a4df3c1057f&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;joined&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;gossipInitialized&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;gossipRunning&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;nativeTransportRunning&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;rpcServerRunning&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;tokenCount&quot;</span> <span class="p">:</span> <span class="mi">256</span><span class="p">,</span>
+            <span class="nt">&quot;uptimeMillis&quot;</span> <span class="p">:</span> <span class="mi">29072</span>
+        <span class="p">}</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="nt">&quot;tasks&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;METADATA&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;cpuCores&quot;</span> <span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="nt">&quot;diskMb&quot;</span> <span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+            <span class="nt">&quot;memMb&quot;</span> <span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;SERVER&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;cpuCores&quot;</span> <span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+            <span class="nt">&quot;diskMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+            <span class="nt">&quot;memMb&quot;</span> <span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.server&quot;</span>
+        <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;targetRunState&quot;</span> <span class="p">:</span> <span class="s2">&quot;RUN&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">64113</span><span class="p">,</span>
+        <span class="nt">&quot;seedNode&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;cassandraDaemonPid&quot;</span> <span class="p">:</span> <span class="mi">6127</span><span class="p">,</span>
+        <span class="nt">&quot;lastHealthCheck&quot;</span> <span class="p">:</span> <span class="mi">1426686217095</span><span class="p">,</span>
+        <span class="nt">&quot;healthCheckDetails&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;healthy&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;msg&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;version&quot;</span> <span class="p">:</span> <span class="s2">&quot;2.1.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;operationMode&quot;</span> <span class="p">:</span> <span class="s2">&quot;JOINING&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;clusterName&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;dataCenter&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;rack&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;endpoint&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostId&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;joined&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;gossipInitialized&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;gossipRunning&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nt">&quot;nativeTransportRunning&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nt">&quot;rpcServerRunning&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nt">&quot;tokenCount&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="nt">&quot;uptimeMillis&quot;</span> <span class="p">:</span> <span class="mi">16936</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/live-nodes?limit=n"><code>/live-nodes?limit=N</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;nativePort&quot;</span> <span class="p">:</span> <span class="mi">9042</span><span class="p">,</span>
+    <span class="nt">&quot;rpcPort&quot;</span> <span class="p">:</span> <span class="mi">9160</span><span class="p">,</span>
+    <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">7199</span><span class="p">,</span>
+    <span class="nt">&quot;liveNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;127.0.0.2&quot;</span> <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/live-nodes/text?limit=n"><code>/live-nodes/text?limit=N</code></h2>
+<div class="highlight"><pre><code class="language-text" data-lang="text">NATIVE: 9042
+RPC: 9160
+JMX: 7199
+IP: 127.0.0.1
+IP: 127.0.0.2
+</code></pre></div>
+<h2 id="/cluster/repair/start"><code>/cluster/repair/start</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+     <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/repair/status"><code>/cluster/repair/status</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;running&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;repair&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;REPAIR&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426686829672</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor.REPAIR&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.REPAIR&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;system_traces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;status&quot;</span> <span class="p">:</span> <span class="s2">&quot;FINISHED&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;durationMillis&quot;</span> <span class="p">:</span> <span class="mi">2490</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/repair/abort"><code>/cluster/repair/abort</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/repair/last"><code>/cluster/repair/last</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;present&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;repair&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;REPAIR&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426686829672</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.0.executor.REPAIR&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.REPAIR&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;system_traces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;status&quot;</span> <span class="p">:</span> <span class="s2">&quot;FINISHED&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;durationMillis&quot;</span> <span class="p">:</span> <span class="mi">2490</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/cleanup/start"><code>/cluster/cleanup/start</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+     <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/cleanup/status"><code>/cluster/cleanup/status</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;running&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;cleanup&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;CLEANUP&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426687019998</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.CLEANUP&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;system_traces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;status&quot;</span> <span class="p">:</span> <span class="s2">&quot;SUCCESS&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;durationMillis&quot;</span> <span class="p">:</span> <span class="mi">20</span>
+            <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/cleanup/abort"><code>/cluster/cleanup/abort</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/cleanup/last"><code>/cluster/cleanup/last</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;present&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;cleanup&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;CLEANUP&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426687019998</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.CLEANUP&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;system_traces&quot;</span> <span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;status&quot;</span> <span class="p">:</span> <span class="s2">&quot;SUCCESS&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;durationMillis&quot;</span> <span class="p">:</span> <span class="mi">20</span>
+            <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/rolling-restart/start"><code>/cluster/rolling-restart/start</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+     <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/rolling-restart/status"><code>/cluster/rolling-restart/status</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;restart&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;cleanup&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;RESTART&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426687019998</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.RESTART&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/rolling-restart/abort"><code>/cluster/rolling-restart/abort</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/cluster/rolling-restart/last"><code>/cluster/rolling-restart/last</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&quot;present&quot;</span> <span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;cleanup&quot;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;RESTART&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;started&quot;</span> <span class="p">:</span> <span class="mi">1426687019998</span><span class="p">,</span>
+        <span class="nt">&quot;finished&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;aborted&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;remainingNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;cassandra.node.0.executor&quot;</span> <span class="p">],</span>
+        <span class="nt">&quot;currentNode&quot;</span> <span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;completedNodes&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+            <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;taskId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor.RESTART&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;processedKeyspaces&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="p">},</span>
+            <span class="nt">&quot;remainingKeyspaces&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="p">}</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/stop"><code>/node/{node}/stop</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;targetRunState&quot;</span><span class="p">:</span> <span class="s2">&quot;STOP&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/run"><code>/node/{node}/run</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;targetRunState&quot;</span><span class="p">:</span> <span class="s2">&quot;RUN&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/restart"><code>/node/{node}/restart</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;targetRunState&quot;</span><span class="p">:</span> <span class="s2">&quot;RESTART&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/terminate"><code>/node/{node}/terminate</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;targetRunState&quot;</span><span class="p">:</span> <span class="s2">&quot;TERMINATE&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/replace"><code>/node/{node}/replace</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;success&quot;</span> <span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;reason&quot;</span> <span class="p">:</span> <span class="s2">&quot;Some error message&quot;</span>
+<span class="p">}</span>
+</code></pre></div><div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;success&quot;</span> <span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;ipToReplace&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;targetRunState&quot;</span><span class="p">:</span> <span class="s2">&quot;TERMINATE&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/make-seed"><code>/node/{node}/make-seed</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;oldSeedState&quot;</span> <span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;success&quot;</span> <span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;error&quot;</span> <span class="p">:</span> <span class="s2">&quot;Some error message&quot;</span>
+<span class="p">}</span>
+</code></pre></div><div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;executorId&quot;</span> <span class="p">:</span> <span class="s2">&quot;cassandra.node.1.executor&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;oldSeedState&quot;</span> <span class="p">:</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;success&quot;</span> <span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;seedState&quot;</span> <span class="p">:</span> <span class="s2">&quot;true&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="/node/{node}/make-non-seed"><code>/node/{node}/make-non-seed</code></h2>
+
+<p>Similar to <code>/node/{node}/non-seed</code>.</p>
+
+<h2 id="/qa/report/resources"><code>/qa/report/resources</code></h2>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;nodes&quot;</span> <span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;cassandra.node.0.executor&quot;</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;workdir&quot;</span> <span class="p">:</span> <span class="s2">&quot;/private/tmp/mesos/slave2/slaves/20150402-133617-16777343-5050-33867-S2/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.0.executor/runs/c669173c-f122-4f98-aa30-62836c128597&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;slaveBaseUri&quot;</span> <span class="p">:</span> <span class="s2">&quot;http://127.0.0.2:5051/&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.2&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;targetRunState&quot;</span> <span class="p">:</span> <span class="s2">&quot;RUN&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;jmxIp&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">62008</span><span class="p">,</span>
+      <span class="nt">&quot;live&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+      <span class="nt">&quot;logfiles&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;/private/tmp/mesos/slave2/slaves/20150402-133617-16777343-5050-33867-S2/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.0.executor/runs/c669173c-f122-4f98-aa30-62836c128597/executor.log&quot;</span><span class="p">,</span> <span class="s2">&quot;/private/tmp/mesos/slave2/slaves/20150402-133617-16777343-5050-33867-S2/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.0.executor/runs/c669173c-f122-4f98-aa30-62836c128597/apache-cassandra-2.1.4/logs/system.log&quot;</span> <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;cassandra.node.1.executor&quot;</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;workdir&quot;</span> <span class="p">:</span> <span class="s2">&quot;/private/tmp/mesos/slave1/slaves/20150402-133617-16777343-5050-33867-S0/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.1.executor/runs/40a91e16-fde8-4b29-b4f7-6dc01c9206ad&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;slaveBaseUri&quot;</span> <span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5051/&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;ip&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;hostname&quot;</span> <span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;targetRunState&quot;</span> <span class="p">:</span> <span class="s2">&quot;RUN&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;jmxIp&quot;</span> <span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;jmxPort&quot;</span> <span class="p">:</span> <span class="mi">62009</span><span class="p">,</span>
+      <span class="nt">&quot;live&quot;</span> <span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+      <span class="nt">&quot;logfiles&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;/private/tmp/mesos/slave1/slaves/20150402-133617-16777343-5050-33867-S0/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.1.executor/runs/40a91e16-fde8-4b29-b4f7-6dc01c9206ad/executor.log&quot;</span><span class="p">,</span> <span class="s2">&quot;/private/tmp/mesos/slave1/slaves/20150402-133617-16777343-5050-33867-S0/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.1.executor/runs/40a91e16-fde8-4b29-b4f7-6dc01c9206ad/apache-cassandra-2.1.4/logs/system.log&quot;</span> <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="get-/qa/report/resources-accept:-text/plain">GET <code>/qa/report/resources</code> Accept: text/plain</h2>
+<div class="highlight"><pre><code class="language-text" data-lang="text">JMX_PORT: 62008
+JMX_IP: 127.0.0.1
+NODE_IP: 127.0.0.2
+BASE: http://127.0.0.2:5051/
+LOG: /private/tmp/mesos/slave2/slaves/20150402-133617-16777343-5050-33867-S2/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.0.executor/runs/c669173c-f122-4f98-aa30-62836c128597/executor.log
+LOG: /private/tmp/mesos/slave2/slaves/20150402-133617-16777343-5050-33867-S2/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.0.executor/runs/c669173c-f122-4f98-aa30-62836c128597/apache-cassandra-2.1.4/logs/system.log
+JMX_PORT: 62009
+JMX_IP: 127.0.0.1
+NODE_IP: 127.0.0.1
+BASE: http://127.0.0.1:5051/
+LOG: /private/tmp/mesos/slave1/slaves/20150402-133617-16777343-5050-33867-S0/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.1.executor/runs/40a91e16-fde8-4b29-b4f7-6dc01c9206ad/executor.log
+LOG: /private/tmp/mesos/slave1/slaves/20150402-133617-16777343-5050-33867-S0/frameworks/20150402-133617-16777343-5050-33867-0001/executors/cassandra.node.1.executor/runs/40a91e16-fde8-4b29-b4f7-6dc01c9206ad/apache-cassandra-2.1.4/logs/system.log
+</code></pre></div>
+  </div>
+</div>
+
+          <footer>
+            <p class="text-muted">
+              &copy; 2015 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+            </p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </body>
+</html>
