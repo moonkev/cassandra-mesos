@@ -72,7 +72,6 @@ public class NodeRepairJob extends AbstractNodeJob {
             LOGGER.info("Starting repair on keyspace {}", keyspace);
 
             // do 'nodetool repair' in local-DC and on node's primary range
-            notificationListener.resetProgress();
             final int commandNo = checkNotNull(jmxConnect).getStorageServiceProxy().forceRepairAsync(keyspace, false, true, true, false);
             if (commandNo == 0) {
                 LOGGER.info("Nothing to repair for keyspace {}", keyspace);
@@ -100,7 +99,6 @@ public class NodeRepairJob extends AbstractNodeJob {
      * Inner class for listening to progress notifications.
      */
     protected class NodeRepairJobNotificationListener extends JMXNotificationProgressListener {
-        private boolean isFirstNotification = true;
 
         @Override
         public boolean isInterestedIn(@NotNull final String tag) {
@@ -120,13 +118,6 @@ public class NodeRepairJob extends AbstractNodeJob {
             return Integer.parseInt(tag.split(":")[1]);
         }
 
-        /**
-         * Resets the progress tracker.
-         */
-        protected void resetProgress() {
-            isFirstNotification = true;
-        }
-
         @Override
         public void progress(@NotNull final String tag, @NotNull final ProgressEvent event) {
             final int cmd = tagToCommand(tag);
@@ -138,12 +129,12 @@ public class NodeRepairJob extends AbstractNodeJob {
                     keyspaceFinished("FINISHED", keyspace);
                     startNextKeyspace();
                     break;
+                case START:
+                    LOGGER.info("Received START notification about repair for keyspace {}", keyspace);
+                    keyspaceStarted();
+                    break;
                 case PROGRESS:
-                    if (isFirstNotification) {
-                        LOGGER.info("Received first PROGRESS notification about repair for keyspace {}", keyspace);
-                        keyspaceStarted();
-                        isFirstNotification = false;
-                    }
+                    LOGGER.info("Received PROGRESS notification about repair for keyspace {}: {}/{}", keyspace, event.getProgressCount(), event.getTotal());
                     break;
             }
         }
