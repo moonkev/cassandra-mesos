@@ -96,6 +96,9 @@ public class NodeRepairJob extends AbstractNodeJob {
         }
     }
 
+    /**
+     * Inner class for listening to progress notifications.
+     */
     protected class NodeRepairJobNotificationListener extends JMXNotificationProgressListener {
         private boolean isFirstNotification = true;
 
