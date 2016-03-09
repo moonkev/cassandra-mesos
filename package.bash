@@ -18,9 +18,9 @@ set -o errexit -o nounset -o pipefail
 
 PROJECT_DIR=$(pwd)
 TARGET_DIR="cassandra-mesos-dist/target/tarball"
-CASSANDRA_VERSION="2.1.4"
+CASSANDRA_VERSION="3.1"
 
-DOWNLOAD_URL_CASS="https://downloads.mesosphere.io/cassandra-mesos/cassandra/apache-cassandra-${CASSANDRA_VERSION}-bin.tar.gz"
+DOWNLOAD_URL_CASS="http://apache.cs.utah.edu/cassandra/${CASSANDRA_VERSION}/apache-cassandra-${CASSANDRA_VERSION}-bin.tar.gz"
 
 VERSION=${VERSION:-"dev"}
 CLEAN_VERSION=${VERSION//\//_}
