@@ -63,6 +63,11 @@ public class MockSchedulerDriver implements SchedulerDriver {
     }
 
     @Override
+    public Protos.Status acceptOffers(Collection<Protos.OfferID> collection, Collection<Protos.Offer.Operation> collection1, Protos.Filters filters) {
+        return Protos.Status.DRIVER_RUNNING;
+    }
+
+    @Override
     public Protos.Status declineOffer(final Protos.OfferID offerId, final Protos.Filters filters) {
         declinedOffers.add(offerId);
         return Protos.Status.DRIVER_RUNNING;
@@ -140,6 +145,11 @@ public class MockSchedulerDriver implements SchedulerDriver {
     @Override
     public Protos.Status reviveOffers() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Protos.Status suppressOffers() {
+        return Protos.Status.DRIVER_RUNNING;
     }
 
     @Override

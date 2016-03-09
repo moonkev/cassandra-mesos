@@ -152,7 +152,7 @@ public final class ProtoUtils {
         if (secret.isPresent()) {
             return Credential.newBuilder()
                 .setPrincipal(principal)
-                .setSecret(ByteString.copyFrom(secret.get().getBytes()))
+                .setSecret(secret.get())
                 .build();
         } else {
             return Credential.newBuilder()

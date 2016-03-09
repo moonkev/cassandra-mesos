@@ -83,15 +83,15 @@
                 <configuration>
                     <toolchains>
                         <protobuf>
-                            <version>2.5.0</version>
+                            <version>2.6.1</version>
                         </protobuf>
                     </toolchains>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.google.protobuf.tools</groupId>
-                <artifactId>maven-protoc-plugin</artifactId>
-                <version>0.4.0</version>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <checkStaleness>true</checkStaleness>
@@ -101,7 +101,7 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>testCompile</goal>
+                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>
